@@ -1,0 +1,46 @@
+Changes made in this project:
+
+1. Fixed the CSS link in views/layouts/boilerplate.ejs.
+   It now uses /style.css because the public folder is already served by Express.
+
+2. Added a navbar in views/layouts/boilerplate.ejs.
+   The navbar has the Wanderlust brand, Explore link, and Add Listing button.
+
+3. Added a footer in views/layouts/boilerplate.ejs.
+
+4. Updated views/index.ejs.
+   It now uses styled listing cards with images, title, location, country, and price.
+
+5. Updated views/show.ejs.
+   It now uses the common layout correctly and has a styled listing detail page.
+
+6. Updated views/new.ejs.
+   It now uses the boilerplate layout and has a styled create listing form.
+
+7. Updated views/edit.ejs.
+   It now uses the boilerplate layout and has a styled edit listing form.
+
+8. Updated public/style.css.
+   Added Airbnb-style colors, cards, navbar, buttons, forms, spacing, and mobile styling.
+
+9. Fixed listing detail page errors.
+   If a listing is missing, the app redirects back to /listings.
+   If title, image, location, country, description, or price is missing, the page now shows fallback text instead of crashing.
+
+
+Bootstrap Form Validation Fix:
+
+1. Fixed the JavaScript import in views/layouts/boilerplate.ejs.
+   It now uses /js/script.js so the validation script loads correctly on all routes.
+
+2. Updated views/new.ejs.
+   Added needs-validation, novalidate, required fields, price validation, URL validation, and validation feedback messages.
+
+3. Updated views/edit.ejs.
+   Added the same validation setup as the new listing form so edit submissions also show proper errors.
+
+4. Updated public/style.css.
+   Added styles for invalid-feedback and was-validated so validation errors are visible even without Bootstrap CSS.
+
+5. Verified the change.
+   app.js syntax check passed, and the new/edit EJS templates rendered correctly with ejs-mate.

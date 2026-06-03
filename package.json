@@ -1,0 +1,22 @@
+{
+  "name": "full_stack_project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "node -e \"const ejs=require('ejs'); const sample={_id:'1', title:'Sample', description:'Sample description', price:1200, location:'Goa', country:'India'}; ejs.renderFile('views/index.ejs', { allListings:[sample] }, (err) => { if (err) throw err; ejs.renderFile('views/show.ejs', { listing:sample }, (err) => { if (err) throw err; }); });\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "ejs": "^5.0.2",
+    "ejs-mate": "^4.0.0",
+    "express": "^5.2.1",
+    "method-override": "^3.0.0",
+    "mongoose": "^9.6.2",
+    "nodemon": "^3.1.14"
+  }
+}

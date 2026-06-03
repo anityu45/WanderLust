@@ -1,0 +1,34 @@
+<% layout("layouts/boilerplate") %>
+
+<section class="form-page">
+    <p class="eyebrow">Update stay</p>
+    <h1>Edit listing</h1>
+
+    <form class="listing-form needs-validation" method="post" action="/listings/<%= listing._id %>?_method=PUT" novalidate>
+        <label>Title
+            <input name="listing[title]" value="<%= listing.title %>" type="text" required>
+            <div class="invalid-feedback">Please enter a title.</div>
+        </label>
+        <label>Description
+            <textarea name="listing[description]" required><%= listing.description %></textarea>
+            <div class="invalid-feedback">Please enter a description.</div>
+        </label>
+        <label>Image URL
+            <input name="listing[image]" value="<%= listing.image %>" type="url">
+            <div class="invalid-feedback">Please enter a valid image URL.</div>
+        </label>
+        <label>Price
+            <input name="listing[price]" value="<%= listing.price %>" type="number" min="0" required>
+            <div class="invalid-feedback">Please enter a valid price.</div>
+        </label>
+        <label>Location
+            <input name="listing[location]" value="<%= listing.location %>" type="text" required>
+            <div class="invalid-feedback">Please enter a location.</div>
+        </label>
+        <label>Country
+            <input name="listing[country]" value="<%= listing.country %>" type="text" required>
+            <div class="invalid-feedback">Please enter a country.</div>
+        </label>
+        <button class="btn primary">Save Changes</button>
+    </form>
+</section>

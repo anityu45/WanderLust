@@ -1,0 +1,25 @@
+<% layout("layouts/boilerplate") %>
+
+<section class="show-page">
+    <img src="<%= listing.image || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb' %>" alt="<%= listing.title || 'Listing image' %>" class="show-img">
+
+    <div class="show-content">
+        <p class="eyebrow"><%= listing.location || 'Location not added' %>, <%= listing.country || 'Country not added' %></p>
+        <h1><%= listing.title || 'Untitled listing' %></h1>
+        <p class="show-price">
+            <% if (listing.price != null) { %>
+                &#8377; <%= listing.price.toLocaleString("en-IN") %> / night
+            <% } else { %>
+                Price not added
+            <% } %>
+        </p>
+        <p class="show-description"><%= listing.description || 'Description not added.' %></p>
+
+        <div class="actions">
+            <a class="btn secondary" href="/listings/<%= listing._id %>/edit">Edit Listing</a>
+            <form method="post" action="/listings/<%= listing._id %>?_method=DELETE">
+                <button class="btn danger">Delete</button>
+            </form>
+        </div>
+    </div>
+</section>
