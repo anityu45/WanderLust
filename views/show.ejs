@@ -23,3 +23,53 @@
         </div>
     </div>
 </section>
+
+<section class="reviews-section">
+    <div class="reviews-header">
+        <div>
+            <p class="eyebrow">Guest reviews</p>
+            <h2>Ratings and reviews</h2>
+        </div>
+        <p class="review-count"><%= listing.reviews ? listing.reviews.length : 0 %> review<%= listing.reviews && listing.reviews.length === 1 ? "" : "s" %></p>
+    </div>
+
+    <form class="review-form needs-validation" method="post" action="/listings/<%= listing._id %>/reviews" novalidate>
+        <label>Rating
+            <select name="review[rating]" required>
+                <option value="" selected disabled>Choose a rating</option>
+                <option value="5">5 - Excellent</option>
+                <option value="4">4 - Very good</option>
+                <option value="3">3 - Good</option>
+                <option value="2">2 - Fair</option>
+                <option value="1">1 - Poor</option>
+            </select>
+            <div class="invalid-feedback">Please choose a rating.</div>
+        </label>
+        <label>Review
+            <textarea name="review[comment]" placeholder="Share what stood out about this stay" required></textarea>
+            <div class="invalid-feedback">Please leave a review.</div>
+        </label>
+        <button class="btn primary">Post Review</button>
+    </form>
+
+    <div class="review-list">
+        <% if (listing.reviews && listing.reviews.length > 0) { %>
+            <% for (let review of listing.reviews) { %>
+                <article class="review-card">
+                    <div class="review-meta">
+                        <span class="stars"><%= review.rating %> / 5 rating</span>
+                        <% if (review.createdAt) { %>
+                            <span><%= review.createdAt.toLocaleDateString("en-IN") %></span>
+                        <% } %>
+                    </div>
+                    <p><%= review.comment %></p>
+                    <form method="post" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
+                        <button class="btn danger small">Delete Review</button>
+                    </form>
+                </article>
+            <% } %>
+        <% } else { %>
+            <p class="empty-reviews">No reviews yet. Be the first to rate this listing.</p>
+        <% } %>
+    </div>
+</section>
