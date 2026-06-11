@@ -8,6 +8,11 @@ router.get("/", wrapAsync(async (req, res) => {
     res.render("index.ejs", { allListings });
 }));
 
+router.get("/getcookies",(req,res)=>{
+    res.cookie("greet","hello");
+    res.send("sent u cookies");
+});
+
 router.get("/new", (req, res) => {
     res.render("new.ejs");
 });
@@ -47,5 +52,7 @@ router.delete("/:id", wrapAsync(async (req, res) => {
     await Listing.findByIdAndDelete(id);
     res.redirect("/listings");
 }));
+
+
 
 module.exports = router;

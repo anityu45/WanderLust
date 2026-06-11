@@ -7,6 +7,7 @@ const ejsmate=require("ejs-mate");
 const ExpressError=require("./utils/ExpressError.js");
 const listingRouter=require("./routes/listing.js");
 const reviewRouter=require("./routes/review.js");
+const serverRouter=require("./routes/server.js");
 
 const MONGO_URL='mongodb://127.0.0.1:27017/wander';
 
@@ -32,8 +33,14 @@ app.get("/",(req,res)=>{
     res.redirect("/listings");
 });
 
+app.get("/getcookies",(req,res)=>{
+    res.cookie("greet","hello");
+    res.send("sent u cookies");
+});
+
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
+app.use("/", serverRouter);
 
 app.all("/{*splat}",(req,res,next)=>{
     next(new ExpressError(404,"Page Not Found"));
