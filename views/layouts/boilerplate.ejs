@@ -11,10 +11,18 @@
     <nav class="navbar">
         <a class="brand" href="/listings">Wanderlust</a>
         <div class="nav-links">
+            <% if(!currUser) { %>
+                <a class="brand" href="/signup">Signup</a>
+                <a class="brand" href="/login">login</a>
+            <% } %>
+            <% if(currUser) { %>
+                <a class="brand" href="/logout">logout</a>
+            <% } %>
             <a href="/listings">Explore</a>
             <a class="nav-button" href="/listings/new">Add Listing</a>
         </div>
     </nav>
+
 
     <main class="container mt-3">
         <%- include("../flash.ejs") %> 
