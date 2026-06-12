@@ -10,6 +10,11 @@ const ExpressError=require("./utils/ExpressError.js");
 const listingRouter=require("./routes/listing.js");
 const reviewRouter=require("./routes/review.js");
 const serverRouter=require("./routes/server.js");
+const passport=require("passport");
+const LocalStrategy=require("passport-local");
+const User=require("./models/user.js");
+const userrouter=require("./routes/user.js");
+ 
 
 const MONGO_URL='mongodb://127.0.0.1:27017/wander';
 
@@ -23,6 +28,7 @@ app.use(express.urlencoded({extended:true}));
 app.use(methodOverride("_method"));
 app.engine('ejs',ejsmate);
 app.use(express.static(path.join(__dirname,"/public")));
+
 
 const sessionOptions = {
     secret: "mysupersecretstring",
@@ -38,6 +44,22 @@ const sessionOptions = {
 app.use(session(sessionOptions));
 app.use(flash());
 
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser()); 
+
+app.get("/demouser",async (req,res)=>{
+   let fakeuser = new User({
+    email:"student@gmail.com",
+    username:"anityu45"
+   });
+   let registerduser=await User.register(fakeuser,"helloworld");
+   res.send(registerduser);
+});
+
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
@@ -47,24 +69,20 @@ app.use((req, res, next) => {
 main().then(()=>{
     console.log("connected to db");
 })
-.catch((err)=>{
-    console.log("error");
-}
-);
-app.get("/",(req,res)=>{
-    res.redirect("/listings");
+.catch((err) => {
+    console.log(err);
 });
 
-app.get("/getcookies",(req,res)=>{
-    res.cookie("greet","hello");
-    res.send("sent u cookies");
+app.get("/",(req,res)=>{
+    res.redirect("/listings");
 });
 
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", serverRouter);
+app.use("/",userrouter);
 
-app.all("/{*splat}",(req,res,next)=>{
+app.use((req, res, next) => { // This will catch all unhandled requests
     next(new ExpressError(404,"Page Not Found"));
 });
 
@@ -72,23 +90,6 @@ app.use((err,req,res,next)=>{
     let {statusCode=500,message="Something went wrong"}=err;
     res.status(statusCode).send(message);
 });
-
-
-
-//app.get("/testlisting",async (req,res)=>{
-//    let sample1=new Listing(
-//        {
-//            title:"Mynew villa",
-//            description:"By the beach",
-//            price:1200,
-//            location:"Calagute,Goa",
-//            country:"India"
-//        }
-//    );
-//    await sample1.save();
-//    console.log("sample was saved");
-//    res.send("sucessfull testing");
-//});
 
 app.listen(3000,()=>{
     console.log("app is listening to the port 3000")

@@ -1,0 +1,22 @@
+<% layout("layouts/boilerplate") %>
+
+<section class="form-page">
+    <p class="eyebrow">Join the community</p>
+    <h1>Sign up</h1>
+
+    <form class="listing-form needs-validation" method="post" action="/signup" novalidate>
+        <label>Username
+            <input name="username" placeholder="Enter username" type="text" required>
+            <div class="invalid-feedback">Please choose a username.</div>
+        </label>
+        <label>Email
+            <input name="email" placeholder="Enter email" type="email" required>
+            <div class="invalid-feedback">Please enter a valid email address.</div>
+        </label>
+        <label>Password
+            <input name="password" placeholder="Enter password" type="password" required>
+            <div class="invalid-feedback">Please enter a password.</div>
+        </label>
+        <button class="btn primary">Sign Up</button>
+    </form>
+</section>

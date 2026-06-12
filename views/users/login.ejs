@@ -1,0 +1,18 @@
+<% layout("layouts/boilerplate") %>
+
+<section class="form-page">
+    <p class="eyebrow">Welcome back</p>
+    <h1>Log in</h1>
+
+    <form class="listing-form needs-validation" method="post" action="/login" novalidate>
+        <label>Username
+            <input name="username" placeholder="Enter username" type="text" required>
+            <div class="invalid-feedback">Please enter your username.</div>
+        </label>
+        <label>Password
+            <input name="password" placeholder="Enter password" type="password" required>
+            <div class="invalid-feedback">Please enter your password.</div>
+        </label>
+        <button class="btn primary">Log In</button>
+    </form>
+</section>
