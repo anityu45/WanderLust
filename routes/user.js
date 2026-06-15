@@ -20,7 +20,7 @@ router.post("/signup", wrapAsync(async (req, res) => {
                 return next(err);
             };
         req.flash("success", "Welcome to Wanderlust!");
-        res.redirect("/listings");
+        res.redirect(res.session.redirectUrl);
         });
        
     } catch (e) {
