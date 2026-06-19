@@ -7,6 +7,7 @@ const methodOverride=require("method-override");
 const app=express();
 const ejsmate=require("ejs-mate");
 const ExpressError=require("./utils/ExpressError.js");
+const wrapAsync=require("./utils/wrapasync.js");
 const listingRouter=require("./routes/listing.js");
 const reviewRouter=require("./routes/review.js");
 const serverRouter=require("./routes/server.js");
@@ -51,14 +52,14 @@ passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser()); 
 
-app.get("/demouser",async (req,res)=>{
+app.get("/demouser", wrapAsync(async (req,res)=>{
    let fakeuser = new User({
     email:"student@gmail.com",
     username:"anityu45"
    });
    let registerduser=await User.register(fakeuser,"helloworld");
    res.send(registerduser);
-});
+}));
 
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
@@ -84,7 +85,7 @@ app.use("/", serverRouter);
 app.use("/",userrouter);
 
 app.use((req, res, next) => { // This will catch all unhandled requests
-    next(new ExpressError(404,"Page Not Found"));
+    next(new ExpressError("Page Not Found", 404));
 });
 
 app.use((err,req,res,next)=>{

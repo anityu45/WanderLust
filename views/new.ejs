@@ -4,7 +4,7 @@
     <p class="eyebrow">Host your place</p>
     <h1>Create a new listing</h1>
 
-    <form class="listing-form needs-validation" method="post" action="/listings" novalidate>
+    <form class="listing-form needs-validation" method="post" action="/listings" novalidate enctype="application/x-www-form-urlencoded">
         <label>Title
             <input name="listing[title]" placeholder="Enter title" type="text" required>
             <div class="invalid-feedback">Please enter a title.</div>
@@ -14,7 +14,7 @@
             <div class="invalid-feedback">Please enter a description.</div>
         </label>
         <label>Image URL
-            <input name="listing[image]" placeholder="Enter image URL" type="url">
+            <input name="listing[image]" placeholder="Upload Listing Image" type="file">
             <div class="invalid-feedback">Please enter a valid image URL.</div>
         </label>
         <label>Price

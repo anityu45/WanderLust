@@ -1,4 +1,5 @@
 <% layout("layouts/boilerplate") %>
+<% const currentUser = typeof currUser !== "undefined" ? currUser : null; %>
 
 <section class="show-page">
     <img src="<%= listing.image || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb' %>" alt="<%= listing.title || 'Listing image' %>" class="show-img">
@@ -33,24 +34,26 @@
         <p class="review-count"><%= listing.reviews ? listing.reviews.length : 0 %> review<%= listing.reviews && listing.reviews.length === 1 ? "" : "s" %></p>
     </div>
 
-    <% if (currUser) { %>
-        <form class="review-form needs-validation" method="post" action="/listings/<%= listing._id %>/reviews" novalidate>
-            <label>Rating
-                <select name="review[rating]" required>
-                    <option value="" selected disabled>Choose a rating</option>
-                    <option value="5">5 - Excellent</option>
-                    <option value="4">4 - Very good</option>
-                    <option value="3">3 - Good</option>
-                    <option value="2">2 - Fair</option>
-                    <option value="1">1 - Poor</option>
-                </select>
+    <% if (currentUser) { %>
+        <form class="review-form needs-validation" method="post" action="/listings/<%= listing._id %>/reviews"
+            novalidate>
+            <div class="rating-input-container">
+                <label for="rating">Rating</label>
+                <div id="rating-stars" class="rating-stars">
+                    <span class="star" data-value="1" title="Poor">★</span>
+                    <span class="star" data-value="2" title="Fair">★</span>
+                    <span class="star" data-value="3" title="Good">★</span>
+                    <span class="star" data-value="4" title="Very good">★</span>
+                    <span class="star" data-value="5" title="Excellent">★</span>
+                </div>
+                <input type="hidden" name="review[rating]" id="rating" class="form-control" required>
                 <div class="invalid-feedback">Please choose a rating.</div>
-            </label>
-            <label>Review
-                <textarea name="review[comment]" placeholder="Share what stood out about this stay" required></textarea>
+            </div>
+            <label for="review-comment">Review</label>
+            <textarea name="review[comment]" id="review-comment" placeholder="Share what stood out about this stay"
+                class="form-control" required></textarea>
                 <div class="invalid-feedback">Please leave a review.</div>
-            </label>
-            <button class="btn primary">Post Review</button>
+            <button class="btn primary mt-3">Post Review</button>
         </form>
     <% } else { %>
         <p class="login-prompt">You must be logged in to leave a review.</p>
@@ -61,13 +64,17 @@
             <% for (let review of listing.reviews) { %>
                 <article class="review-card">
                     <div class="review-meta">
-                        <span class="stars"><%= review.rating %> / 5 rating</span>
+                        <span class="stars">
+                            <% for (let i = 1; i <= 5; i++) { %>
+                                <span class="<%= i <= review.rating ? 'filled-star' : 'empty-star' %>">★</span>
+                            <% } %>
+                        </span>
                         <% if (review.createdAt) { %>
                             <span><%= review.createdAt.toLocaleDateString("en-IN") %></span>
                         <% } %>
                     </div>
                     <p><%= review.comment %></p>
-                <% if (currUser && review.author && review.author.equals(currUser._id)) { %>
+                <% if (currentUser && review.author && review.author.equals(currentUser._id)) { %>
                         <form method="post" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
                             <button class="btn danger small">Delete Review</button>
                         </form>
@@ -79,3 +86,119 @@
         <% } %>
     </div>
 </section>
+
+<style>
+    /* Styling for the interactive rating input */
+    .rating-input-container {
+        margin-bottom: 1rem;
+    }
+
+    .rating-stars {
+        font-size: 1.5rem; /* Adjust size as needed */
+        cursor: pointer;
+        display: inline-block;
+        line-height: 1; /* Align stars properly */
+    }
+
+    .rating-stars .star {
+        color: #ccc; /* Default star color */
+        transition: color 0.2s ease-in-out;
+        display: inline-block; /* Ensure stars are side-by-side */
+    }
+
+    .rating-stars .star.hovered,
+    .rating-stars .star.selected {
+        color: gold; /* Highlighted/selected star color */
+    }
+
+    /* Style for invalid rating input */
+    .rating-stars.is-invalid-stars .star {
+        color: #dc3545; /* Bootstrap danger color */
+    }
+
+    /* Styling for displaying existing reviews */
+    .review-card .stars {
+        font-size: 1.2rem; /* Adjust size for displayed stars */
+        line-height: 1;
+        display: inline-block;
+        margin-right: 0.5rem;
+    }
+
+    .review-card .stars .filled-star {
+        color: gold;
+    }
+
+    .review-card .stars .empty-star {
+        color: #ccc;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ratingStarsContainer = document.getElementById('rating-stars');
+        const ratingInput = document.getElementById('rating');
+        const stars = ratingStarsContainer ? ratingStarsContainer.querySelectorAll('.star') : [];
+        let currentRating = 0; // To store the selected rating
+
+        if (ratingStarsContainer && ratingInput) {
+            // Function to update star display based on a given rating
+            function updateStars(ratingToDisplay) {
+                stars.forEach(star => {
+                    const starValue = parseInt(star.dataset.value);
+                    if (starValue <= ratingToDisplay) {
+                        star.classList.add('selected');
+                    } else {
+                        star.classList.remove('selected');
+                    }
+                });
+            }
+
+            stars.forEach(star => {
+                star.addEventListener('mouseover', function() {
+                    updateStars(parseInt(this.dataset.value)); // Highlight up to hovered star
+                });
+
+                star.addEventListener('mouseout', function() {
+                    updateStars(currentRating); // Revert to selected rating or no selection
+                });
+
+                star.addEventListener('click', function() {
+                    currentRating = parseInt(this.dataset.value);
+                    ratingInput.value = currentRating;
+                    updateStars(currentRating); // Update visual state immediately
+                });
+            });
+
+            // Initialize stars if there's a default value (e.g., from validation error)
+            if (ratingInput.value) {
+                currentRating = parseInt(ratingInput.value);
+                updateStars(currentRating);
+            }
+
+            // Add validation for the hidden input
+            const reviewForm = document.querySelector('.review-form');
+            if (reviewForm) {
+                reviewForm.addEventListener('submit', function(event) {
+                    // Custom validation for the rating input
+                    if (!ratingInput.value) {
+                        ratingInput.setCustomValidity('Please choose a rating.');
+                        // Add is-invalid to the visible rating container for feedback
+                        ratingStarsContainer.classList.add('is-invalid-stars');
+                        event.preventDefault();
+                        event.stopPropagation();
+                    } else {
+                        ratingInput.setCustomValidity('');
+                        ratingStarsContainer.classList.remove('is-invalid-stars');
+                    }
+
+                    // Bootstrap's form validation
+                    if (!reviewForm.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    reviewForm.classList.add('was-validated');
+                }, false);
+            }
+        }
+    });
+</script>

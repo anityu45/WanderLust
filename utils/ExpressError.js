@@ -1,6 +1,8 @@
+// d:\Full_stack_project\utils\ExpressError.js
 class ExpressError extends Error {
-    constructor(statusCode, message) {
-        super(message);
+    constructor(message, statusCode) {
+        super();
+        this.message = message;
         this.statusCode = statusCode;
     }
 }

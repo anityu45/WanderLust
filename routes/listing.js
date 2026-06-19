@@ -3,6 +3,8 @@ const router = express.Router();
 const Listing = require("../models/listing.js");
 const wrapAsync = require("../utils/wrapasync.js");
 const { isLoggedIn, isOwner } = require("../middleware.js");
+const multer  = require('multer')
+const upload = multer({ dest: 'uploads/' })
 
 router.get("/", wrapAsync(async (req, res) => {
     const allListings = await Listing.find({});
@@ -18,13 +20,16 @@ router.get("/new", isLoggedIn, (req, res) => {
     res.render("new.ejs");
 });
 
-router.post("/", isLoggedIn, wrapAsync(async (req, res) => {
-    const newListing = new Listing(req.body.listing);
-    newListing.owner = req.user._id;
-    await newListing.save();
-    req.flash("success", "New Listing Created!");
-    res.redirect(`/listings/${newListing._id}`);
-}));
+//router.post("/", isLoggedIn, wrapAsync(async (req, res) => {
+  //  const newListing = new Listing(req.body.listing);
+    //newListing.owner = req.user._id;
+    //await newListing.save();
+    //req.flash("success", "New Listing Created!");
+    //res.redirect(`/listings/${newListing._id}`);
+//}));
+router.post(upload.single('Listing[image]'),(req,res)=>{
+    res.send(req.file);
+});
 
 router.get("/:id", wrapAsync(async (req, res) => {
     const { id } = req.params;

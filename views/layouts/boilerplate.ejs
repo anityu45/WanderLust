@@ -8,14 +8,15 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+    <% const currentUser = typeof currUser !== "undefined" ? currUser : null; %>
     <nav class="navbar">
         <a class="brand" href="/listings">Wanderlust</a>
         <div class="nav-links">
-            <% if(!currUser) { %>
+            <% if(!currentUser) { %>
                 <a class="brand" href="/signup">Signup</a>
                 <a class="brand" href="/login">login</a>
             <% } %>
-            <% if(currUser) { %>
+            <% if(currentUser) { %>
                 <a class="brand" href="/logout">logout</a>
             <% } %>
             <a href="/listings">Explore</a>
