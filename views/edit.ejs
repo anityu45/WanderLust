@@ -13,9 +13,9 @@
             <textarea name="listing[description]" required><%= listing.description %></textarea>
             <div class="invalid-feedback">Please enter a description.</div>
         </label>
-        <label>Image URL
-            <input name="listing[image]" value="<%= listing.image %>" type="url">
-            <div class="invalid-feedback">Please enter a valid image URL.</div>
+         <label>Image
+            <input name="listing[image]" placeholder="Upload Listing Image" type="file">
+            <div class="invalid-feedback">Please choose an image.</div>
         </label>
         <label>Price
             <input name="listing[price]" value="<%= listing.price %>" type="number" min="0" required>

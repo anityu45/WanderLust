@@ -7,7 +7,6 @@ const multer = require("multer");
 const { storage } = require("../cloudconfig.js");
 const upload = multer({ storage });
 
-
 // Index Route
 router.get("/", wrapAsync(async (req, res) => {
     const allListings = await Listing.find({});
@@ -25,7 +24,7 @@ router.get("/new", isLoggedIn, (req, res) => {
     res.render("new.ejs");
 });
 
-// Create Route (Fixed: Combined Multer + Database save logic + Joi validation)
+// Create Route
 router.post("/", 
     isLoggedIn, 
     upload.single('listing[image]'), 
