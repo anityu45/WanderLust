@@ -4,36 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AirBnb clone</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <% const currentUser = typeof currUser !== "undefined" ? currUser : null; %>
     <nav class="navbar">
         <a class="brand" href="/listings">Wanderlust</a>
         <div class="nav-links">
-            <% if(!currentUser) { %>
-                <a class="brand" href="/signup">Signup</a>
-                <a class="brand" href="/login">login</a>
-            <% } %>
-            <% if(currentUser) { %>
-                <a class="brand" href="/logout">logout</a>
-            <% } %>
             <a href="/listings">Explore</a>
             <a class="nav-button" href="/listings/new">Add Listing</a>
+            
+            <% if (typeof currUser !== "undefined" && currUser) { %>
+                <a href="/logout">Log out</a>
+            <% } else { %>
+                <a href="/signup">Sign up</a>
+                <a href="/login">Log in</a>
+            <% } %>
         </div>
     </nav>
 
-
-    <main class="container mt-3">
-        <%- include("../flash.ejs") %> 
+    <div class="container">
+        <%- include("../flash.ejs") %>
         <%- body %>
-    </main>
+    </div>
 
     <footer class="footer">
         <p>Made for travelers and hosts.</p>
     </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="/js/script.js"></script>
+    <script src="/js/script.js"> </script>
 </body>
 </html>

@@ -15,12 +15,14 @@ router.post("/signup", wrapAsync(async (req, res, next) => {
         const newUser = new User({ email, username });
         const registeredUser = await User.register(newUser, password);
         console.log(registeredUser);
-        req.login(registeredUser,(err)=>{
-            if(err){
+        req.login(registeredUser, (err) => {
+            if (err) {
                 return next(err);
-            };
-        req.flash("success", "Welcome to Wanderlust!");
-        res.redirect("/listings");
+            }
+            req.flash("success", "Welcome to Wanderlust!");
+            req.session.save(() => {
+                res.redirect("/listings");
+            });
         });
        
     } catch (e) {
@@ -43,13 +45,15 @@ router.post("/login",
 wrapAsync(async (req, res) => {
     req.flash("success", "Welcome back to Wanderlust! You are logged in!");
     let redirectUrl = res.locals.redirectUrl || "/listings";
-    res.redirect(redirectUrl);
+    req.session.save(() => {
+        res.redirect(redirectUrl);
+    });
 }));
 
 router.get("/logout",(req,res,next)=>{
     req.logout((err)=>{
         if(err){
-            next(err);
+            return next(err);
         }
         req.flash("success","You are logged out!");
         res.redirect("/listings");
