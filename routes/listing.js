@@ -6,6 +6,7 @@ const { isLoggedIn, isOwner, validateListing } = require("../middleware.js");
 const ExpressError = require("../utils/ExpressError.js");
 const multer = require("multer");
 const { isCloudinaryConfigured, storage } = require("../cloudconfig.js");
+const { geocodeListing, isFallbackCoordinates } = require("../utils/geocode.js");
 
 const allowedImageTypes = ["image/png", "image/jpeg", "image/webp"];
 const upload = multer({
@@ -63,6 +64,11 @@ router.post("/",
             newListing.image = req.file.path;
         }
 
+        const geometry = await geocodeListing(newListing);
+        if (geometry) {
+            newListing.geometry = geometry;
+        }
+
         await newListing.save();
         req.flash("success", "New Listing Created!");
         res.redirect(`/listings/${newListing._id}`);
@@ -95,12 +101,49 @@ router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(async (req, res) => {
 router.put("/:id", isLoggedIn, isOwner, uploadListingImage, validateListing, wrapAsync(async (req, res) => {
     const { id } = req.params;
     const listingData = { ...req.body.listing };
+    const existingListing = await Listing.findById(id);
+
+    if (!existingListing) {
+        req.flash("error", "Listing you requested for does not exist!");
+        return res.redirect("/listings");
+    }
 
     if (req.file) {
         listingData.image = req.file.path;
     }
 
-    await Listing.findByIdAndUpdate(id, listingData, { runValidators: true });
+    const locationChanged =
+        listingData.location !== existingListing.location ||
+        listingData.country !== existingListing.country;
+
+    if (locationChanged) {
+        const geometry = await geocodeListing(listingData);
+        if (geometry) {
+            listingData.geometry = geometry;
+        } else {
+            listingData.$unset = { geometry: "" };
+        }
+    } else if (
+        !existingListing.geometry?.coordinates?.length ||
+        isFallbackCoordinates(existingListing.geometry.coordinates)
+    ) {
+        const geometry = await geocodeListing(listingData);
+        if (geometry) {
+            listingData.geometry = geometry;
+        } else {
+            listingData.$unset = { geometry: "" };
+        }
+    }
+
+    const update = listingData.$unset
+        ? { $set: listingData, $unset: listingData.$unset }
+        : listingData;
+
+    if (update.$set) {
+        delete update.$set.$unset;
+    }
+
+    await Listing.findByIdAndUpdate(id, update, { runValidators: true });
     req.flash("success", "Listing Updated!");
     res.redirect(`/listings/${id}`);
 }));

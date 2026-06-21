@@ -3,17 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wanderlust</title>
+    <title>AirBnb clone</title>
+    <link rel="stylesheet" href="/style.css">
     
     <link href="https://unpkg.com/maplibre-gl@^4.0.0/dist/maplibre-gl.css" rel="stylesheet" />
-    
     <script src="https://unpkg.com/maplibre-gl@^4.0.0/dist/maplibre-gl.js"></script>
 </head>
 <body>
-    
-    <main class="container">
-        <%- body %>
-    </main>
+    <nav class="navbar">
+        <a class="brand" href="/listings">Wanderlust</a>
+        <div class="nav-links">
+            <a href="/listings">Explore</a>
+            <a class="nav-button" href="/listings/new">Add Listing</a>
+            
+            <% if (typeof currUser !== "undefined" && currUser) { %>
+                <a href="/logout">Log out</a>
+            <% } else { %>
+                <a href="/signup">Sign up</a>
+                <a href="/login">Log in</a>
+            <% } %>
+        </div>
+    </nav>
 
+    <div class="container">
+        <%- include("../flash.ejs") %>
+        <%- body %>
+    </div>
+
+    <footer class="footer">
+        <p>Made for travelers and hosts.</p>
+    </footer>
+    <script src="/js/script.js"> </script>
 </body>
 </html>

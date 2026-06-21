@@ -1,5 +1,15 @@
 <% layout("layouts/boilerplate") %>
 <% const currentUser = typeof currUser !== "undefined" ? currUser : null; %>
+<% const safeMaptilerApiKey = typeof maptilerApiKey !== "undefined" ? maptilerApiKey : ""; %>
+<%
+    const rawCoordinates = listing.geometry && Array.isArray(listing.geometry.coordinates)
+        ? listing.geometry.coordinates
+        : [];
+    const hasRealCoordinates = rawCoordinates.length === 2 &&
+        rawCoordinates.every((coordinate) => Number.isFinite(coordinate)) &&
+        !(rawCoordinates[0] === 77.2090 && rawCoordinates[1] === 28.6139);
+    const mapCoordinates = hasRealCoordinates ? rawCoordinates : null;
+%>
 
 <section class="show-page">
     <img src="<%= listing.image || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb' %>" alt="<%= listing.title || 'Listing image' %>" class="show-img">
@@ -25,9 +35,11 @@
     </div>
 </section>
 
-<section class="map-section" style="margin: 2rem 0;">
-    <h3 style="margin-bottom: 1rem;">Where you'll be</h3>
-    <div id="map" style="width: 100%; height: 400px; border-radius: 12px; border: 1px solid #ddd; background-color: #f8f9fa;"></div>
+<section class="map-section">
+    <h3>Where you'll be</h3>
+    <div id="map" class="listing-map">
+        <p class="map-fallback">Map is unavailable right now.</p>
+    </div>
 </section>
 
 <section class="reviews-section">
@@ -40,7 +52,8 @@
     </div>
 
     <% if (currentUser) { %>
-        <form class="review-form needs-validation" method="post" action="/listings/<%= listing._id %>/reviews" novalidate>
+        <form class="review-form needs-validation" method="post" action="/listings/<%= listing._id %>/reviews"
+            novalidate>
             <div class="rating-input-container">
                 <label for="rating">Rating</label>
                 <div id="rating-stars" class="rating-stars">
@@ -54,8 +67,9 @@
                 <div class="invalid-feedback">Please choose a rating.</div>
             </div>
             <label for="review-comment">Review</label>
-            <textarea name="review[comment]" id="review-comment" placeholder="Share what stood out about this stay" class="form-control" required></textarea>
-            <div class="invalid-feedback">Please leave a review.</div>
+            <textarea name="review[comment]" id="review-comment" placeholder="Share what stood out about this stay"
+                class="form-control" required></textarea>
+                <div class="invalid-feedback">Please leave a review.</div>
             <button class="btn primary mt-3">Post Review</button>
         </form>
     <% } else { %>
@@ -77,7 +91,7 @@
                         <% } %>
                     </div>
                     <p><%= review.comment %></p>
-                    <% if (currentUser && review.author && review.author.equals(currentUser._id)) { %>
+                <% if (currentUser && review.author && review.author.equals(currentUser._id)) { %>
                         <form method="post" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
                             <button class="btn danger small">Delete Review</button>
                         </form>
@@ -91,60 +105,93 @@
 </section>
 
 <style>
-    .rating-input-container { margin-bottom: 1rem; }
-    .rating-stars { font-size: 1.5rem; cursor: pointer; display: inline-block; line-height: 1; }
-    .rating-stars .star { color: #ccc; transition: color 0.2s ease-in-out; display: inline-block; }
-    .rating-stars .star.hovered, .rating-stars .star.selected { color: gold; }
-    .rating-stars.is-invalid-stars .star { color: #dc3545; }
-    .review-card .stars { font-size: 1.2rem; line-height: 1; display: inline-block; margin-right: 0.5rem; }
-    .review-card .stars .filled-star { color: gold; }
-    .review-card .stars .empty-star { color: #ccc; }
+    /* Styling for the interactive rating input */
+    .rating-input-container {
+        margin-bottom: 1rem;
+    }
+
+    .rating-stars {
+        font-size: 1.5rem; /* Adjust size as needed */
+        cursor: pointer;
+        display: inline-block;
+        line-height: 1; /* Align stars properly */
+    }
+
+    .rating-stars .star {
+        color: #ccc; /* Default star color */
+        transition: color 0.2s ease-in-out;
+        display: inline-block; /* Ensure stars are side-by-side */
+    }
+
+    .rating-stars .star.hovered,
+    .rating-stars .star.selected {
+        color: gold; /* Highlighted/selected star color */
+    }
+
+    /* Style for invalid rating input */
+    .rating-stars.is-invalid-stars .star {
+        color: #dc3545; /* Bootstrap danger color */
+    }
+
+    /* Styling for displaying existing reviews */
+    .review-card .stars {
+        font-size: 1.2rem; /* Adjust size for displayed stars */
+        line-height: 1;
+        display: inline-block;
+        margin-right: 0.5rem;
+    }
+
+    .review-card .stars .filled-star {
+        color: gold;
+    }
+
+    .review-card .stars .empty-star {
+        color: #ccc;
+    }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        
-        // --- 1. SAFE MAPTILER SETUP ENGINE ---
-        const maptilerApiKey = '<%= maptilerApiKey %>';
-        
-        // Anti-Crash Trap fallback logic: defaults to New Delhi coordinates [lng, lat] if database values are missing
-        const coordinates = <%- JSON.stringify(listing.geometry && listing.geometry.coordinates ? listing.geometry.coordinates : [77.2090, 28.6139]) %>;
+        const mapElement = document.getElementById('map');
+        const maptilerApiKey = <%- JSON.stringify(safeMaptilerApiKey) %>;
+        const coordinates = <%- JSON.stringify(mapCoordinates) %>;
+        const hasValidCoordinates = coordinates &&
+            Array.isArray(coordinates) &&
+            coordinates.length === 2 &&
+            coordinates.every(function(coordinate) {
+                return Number.isFinite(coordinate);
+            });
 
-        // Ensure key exists before rendering map instance to prevent client console execution crash
-        if (!maptilerApiKey) {
-            console.error("MapTiler Key initialization configuration failure: Key is undefined.");
-            document.getElementById('map').innerHTML = "<p style='padding: 1rem; color: #721c24;'>Map services temporarily unavailable.</p>";
-        } else {
-            try {
-                // Instantiating MapLibre Instance Engine
-                const map = new maplibregl.Map({
-                    container: 'map',
-                    style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${maptilerApiKey}`,
-                    center: coordinates,
-                    zoom: 11
-                });
+        if (mapElement && maptilerApiKey && hasValidCoordinates && window.maplibregl) {
+            const map = new maplibregl.Map({
+                container: 'map',
+                style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${maptilerApiKey}`,
+                center: coordinates,
+                zoom: 11
+            });
 
-                // Standard Top Corner Control Nav Extensions
-                map.addControl(new maplibregl.NavigationControl(), 'top-right');
+            map.on('error', function() {
+                if (mapElement) {
+                    mapElement.classList.add('map-unavailable');
+                }
+            });
 
-                // Custom Styled Drop Location Pin Implementation
-                new maplibregl.Marker({ color: '#fe424d' })
-                    .setLngLat(coordinates)
-                    .setPopup(new maplibregl.Popup({ offset: 25 }).setHTML('<h4><%= listing.title %></h4><p>Exact location provided after booking</p>'))
-                    .addTo(map);
-            } catch (mapError) {
-                console.error("Map failed to load successfully:", mapError);
-            }
+            map.addControl(new maplibregl.NavigationControl(), 'top-right');
+            new maplibregl.Marker({ color: '#fe424d' })
+                .setLngLat(coordinates)
+                .addTo(map);
+        } else if (mapElement) {
+            mapElement.classList.add('map-unavailable');
         }
 
-
-        // --- 2. INTERACTIVE STAR RATINGS SYSTEM ---
+        // --- YOUR ORIGINAL STAR RATINGS SCRIPT ---
         const ratingStarsContainer = document.getElementById('rating-stars');
         const ratingInput = document.getElementById('rating');
         const stars = ratingStarsContainer ? ratingStarsContainer.querySelectorAll('.star') : [];
-        let currentRating = 0;
+        let currentRating = 0; // To store the selected rating
 
         if (ratingStarsContainer && ratingInput) {
+            // Function to update star display based on a given rating
             function updateStars(ratingToDisplay) {
                 stars.forEach(star => {
                     const starValue = parseInt(star.dataset.value);
@@ -157,26 +204,35 @@
             }
 
             stars.forEach(star => {
-                star.addEventListener('mouseover', function() { updateStars(parseInt(this.dataset.value)); });
-                star.addEventListener('mouseout', function() { updateStars(currentRating); });
+                star.addEventListener('mouseover', function() {
+                    updateStars(parseInt(this.dataset.value)); // Highlight up to hovered star
+                });
+
+                star.addEventListener('mouseout', function() {
+                    updateStars(currentRating); // Revert to selected rating or no selection
+                });
+
                 star.addEventListener('click', function() {
                     currentRating = parseInt(this.dataset.value);
                     ratingInput.value = currentRating;
-                    updateStars(currentRating);
+                    updateStars(currentRating); // Update visual state immediately
                 });
             });
 
+            // Initialize stars if there's a default value (e.g., from validation error)
             if (ratingInput.value) {
                 currentRating = parseInt(ratingInput.value);
                 updateStars(currentRating);
             }
 
-            // Custom Review form lifecycle interceptor
+            // Add validation for the hidden input
             const reviewForm = document.querySelector('.review-form');
             if (reviewForm) {
                 reviewForm.addEventListener('submit', function(event) {
+                    // Custom validation for the rating input
                     if (!ratingInput.value) {
                         ratingInput.setCustomValidity('Please choose a rating.');
+                        // Add is-invalid to the visible rating container for feedback
                         ratingStarsContainer.classList.add('is-invalid-stars');
                         event.preventDefault();
                         event.stopPropagation();
@@ -185,6 +241,7 @@
                         ratingStarsContainer.classList.remove('is-invalid-stars');
                     }
 
+                    // Bootstrap's form validation
                     if (!reviewForm.checkValidity()) {
                         event.preventDefault();
                         event.stopPropagation();

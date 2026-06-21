@@ -27,8 +27,20 @@ const listingSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
     },
+    
+    geometry: {
+        type: {
+            type: String, 
+            enum: ['Point'], 
+            default: "Point",
+        },
+        coordinates: {
+            type: [Number],
+        }
+    }
 });
 
+// Middleware hook to delete associated reviews when a listing is destroyed
 listingSchema.post("findOneAndDelete", async (listing) => {
     if (listing) {
         await Review.deleteMany({ _id: { $in: listing.reviews } });

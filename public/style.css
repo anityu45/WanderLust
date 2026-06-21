@@ -161,6 +161,40 @@ p {
     padding: 28px;
 }
 
+.map-section {
+    background-color: #ffffff;
+    border: 1px solid #eeeeee;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    margin-top: 26px;
+    padding: 28px;
+}
+
+.listing-map {
+    align-items: center;
+    background-color: #f1f1f1;
+    border-radius: 8px;
+    display: flex;
+    height: 400px;
+    justify-content: center;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    width: 100%;
+}
+
+.listing-map .map-fallback {
+    color: #717171;
+    display: none;
+    font-weight: 700;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+}
+
+.listing-map.map-unavailable .map-fallback {
+    display: block;
+}
+
 .show-price {
     margin-bottom: 18px;
 }
@@ -394,6 +428,7 @@ p {
 
     .form-page,
     .show-content,
+    .map-section,
     .reviews-section {
         padding: 22px;
     }
