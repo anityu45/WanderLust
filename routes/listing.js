@@ -3,9 +3,35 @@ const router = express.Router();
 const Listing = require("../models/listing.js");
 const wrapAsync = require("../utils/wrapasync.js");
 const { isLoggedIn, isOwner, validateListing } = require("../middleware.js");
+const ExpressError = require("../utils/ExpressError.js");
 const multer = require("multer");
-const { storage } = require("../cloudconfig.js");
-const upload = multer({ storage });
+const { isCloudinaryConfigured, storage } = require("../cloudconfig.js");
+
+const allowedImageTypes = ["image/png", "image/jpeg", "image/webp"];
+const upload = multer({
+    storage: storage || multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        if (allowedImageTypes.includes(file.mimetype)) {
+            return cb(null, true);
+        }
+        cb(new ExpressError("Please upload a PNG, JPG, JPEG, or WEBP image.", 400));
+    },
+});
+
+const uploadListingImage = (req, res, next) => {
+    upload.single("listing[image]")(req, res, (err) => {
+        if (err) {
+            return next(err);
+        }
+
+        if (req.file && !isCloudinaryConfigured) {
+            return next(new ExpressError("Image upload is temporarily unavailable. Please try again later.", 503));
+        }
+
+        next();
+    });
+};
 
 // Index Route
 router.get("/", wrapAsync(async (req, res) => {
@@ -27,7 +53,7 @@ router.get("/new", isLoggedIn, (req, res) => {
 // Create Route
 router.post("/", 
     isLoggedIn, 
-    upload.single('listing[image]'), 
+    uploadListingImage,
     validateListing, 
     wrapAsync(async (req, res) => {
         const newListing = new Listing(req.body.listing);
@@ -66,9 +92,15 @@ router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(async (req, res) => {
 }));
 
 // Update Route
-router.put("/:id", isLoggedIn, isOwner, validateListing, wrapAsync(async (req, res) => {
+router.put("/:id", isLoggedIn, isOwner, uploadListingImage, validateListing, wrapAsync(async (req, res) => {
     const { id } = req.params;
-    await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { runValidators: true });
+    const listingData = { ...req.body.listing };
+
+    if (req.file) {
+        listingData.image = req.file.path;
+    }
+
+    await Listing.findByIdAndUpdate(id, listingData, { runValidators: true });
     req.flash("success", "Listing Updated!");
     res.redirect(`/listings/${id}`);
 }));

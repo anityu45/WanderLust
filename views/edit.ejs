@@ -4,7 +4,7 @@
     <p class="eyebrow">Update stay</p>
     <h1>Edit listing</h1>
 
-    <form class="listing-form needs-validation" method="post" action="/listings/<%= listing._id %>?_method=PUT" novalidate>
+    <form class="listing-form needs-validation" method="post" action="/listings/<%= listing._id %>?_method=PUT" novalidate enctype="multipart/form-data">
         <label>Title
             <input name="listing[title]" value="<%= listing.title %>" type="text" required>
             <div class="invalid-feedback">Please enter a title.</div>
@@ -13,8 +13,8 @@
             <textarea name="listing[description]" required><%= listing.description %></textarea>
             <div class="invalid-feedback">Please enter a description.</div>
         </label>
-         <label>Image
-            <input name="listing[image]" placeholder="Upload Listing Image" type="file">
+        <label>Image
+            <input name="listing[image]" placeholder="Upload Listing Image" type="file" accept="image/png,image/jpeg,image/webp">
             <div class="invalid-feedback">Please choose an image.</div>
         </label>
         <label>Price

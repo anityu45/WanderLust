@@ -66,11 +66,15 @@ passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
+// Global local variables middleware template injections
 app.use((req, res, next) => {
     res.locals.isAuthenticated = req.isAuthenticated();
     res.locals.currUser = req.user;
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
+    
+    // SAFE TRAP: Binds the API Token key smoothly to all view render routines
+    res.locals.maptilerApiKey = process.env.MAPTILER_API_KEY || ""; 
     next();
 });
 
@@ -87,6 +91,7 @@ app.all(/.*/, (req, res, next) => {
     next(new ExpressError("Page Not Found", 404));
 });
 
+// Central Error Handling Middleware Engine
 app.use((err, req, res, next) => {
     const { statusCode = 500 } = err;
     if (!err.message) {
