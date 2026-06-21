@@ -10,9 +10,12 @@ const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const session = require("express-session");
+const MongoStoreModule = require("connect-mongo");
+const MongoStore = MongoStoreModule.default || MongoStoreModule.MongoStore || MongoStoreModule;
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
+
 
 // 3. Models & Routes
 const User = require("./models/user.js");
@@ -24,9 +27,11 @@ const ExpressError = require("./utils/ExpressError.js");
 
 const app = express();
 const MONGO_URL = "mongodb://127.0.0.1:27017/wander";
+const dbUrl=process.env.ATLASDB_URL
 
 async function main() {
-    await mongoose.connect(MONGO_URL);
+    await mongoose.connect(dbUrl);
+
 }
 
 main()
@@ -46,7 +51,20 @@ app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+const store=MongoStore.create({
+   mongoUrl:dbUrl,
+   crypto:{
+    secret:"wanderlust-secret",
+   },
+   touchAfter:24*3600,
+});
+
+store.on("error",(err)=>{
+    console.log("error in MongoSession",err);
+});
+
 const sessionOptions = {
+    store,
     secret: "wanderlust-secret",
     resave: false,
     saveUninitialized: true,
