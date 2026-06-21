@@ -30,11 +30,10 @@ const pointFromCoordinates = (coordinates) => {
     };
 };
 
-const geocodeListing = async (listing = {}) => {
+const geocodeWithMapTiler = async (query) => {
     const apiKey = process.env.MAPTILER_API_KEY?.trim();
-    const query = buildLocationQuery(listing);
 
-    if (!apiKey || !query || typeof fetch !== "function") {
+    if (!apiKey) {
         return null;
     }
 
@@ -65,9 +64,52 @@ const geocodeListing = async (listing = {}) => {
     }
 };
 
+const geocodeWithNominatim = async (query) => {
+    const url = new URL("https://nominatim.openstreetmap.org/search");
+    url.searchParams.set("q", query);
+    url.searchParams.set("format", "jsonv2");
+    url.searchParams.set("limit", "1");
+
+    try {
+        const response = await fetch(url, {
+            headers: {
+                "User-Agent": "WanderlustApp/1.0 (local-development)",
+            },
+        });
+
+        if (!response.ok) {
+            console.warn(`Nominatim geocoding failed with status ${response.status} for "${query}".`);
+            return null;
+        }
+
+        const data = await response.json();
+        const firstResult = data?.[0];
+        const lng = Number(firstResult?.lon);
+        const lat = Number(firstResult?.lat);
+
+        return pointFromCoordinates([lng, lat]);
+    } catch (err) {
+        console.warn(`Nominatim geocoding failed for "${query}": ${err.message}`);
+        return null;
+    }
+};
+
+const geocodeListing = async (listing = {}) => {
+    const query = buildLocationQuery(listing);
+
+    if (!query || typeof fetch !== "function") {
+        return null;
+    }
+
+    return await geocodeWithMapTiler(query) || await geocodeWithNominatim(query);
+};
+
 module.exports = {
     FALLBACK_COORDINATES,
+    buildLocationQuery,
     geocodeListing,
+    geocodeWithMapTiler,
+    geocodeWithNominatim,
     hasValidCoordinates,
     isFallbackCoordinates,
     pointFromCoordinates,
