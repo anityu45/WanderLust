@@ -7,9 +7,10 @@ const Listing = require("./models/listing.js");
 const { geocodeListing, isFallbackCoordinates } = require("./utils/geocode.js");
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wander";
+const dbUrl = process.env.ATLASDB_URL || MONGO_URL;
 
 async function main() {
-    await mongoose.connect(MONGO_URL);
+    await mongoose.connect(dbUrl);
 }
 
 main()

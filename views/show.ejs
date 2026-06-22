@@ -170,7 +170,8 @@
                 zoom: 11
             });
 
-            map.on('error', function() {
+            map.on('error', function(event) {
+                console.warn('Map failed to load.', event && event.error ? event.error : event);
                 if (mapElement) {
                     mapElement.classList.add('map-unavailable');
                 }
@@ -181,6 +182,13 @@
                 .setLngLat(coordinates)
                 .addTo(map);
         } else if (mapElement) {
+            if (!maptilerApiKey) {
+                console.warn('Map unavailable: MAPTILER_API_KEY is not configured on the server.');
+            } else if (!hasValidCoordinates) {
+                console.warn('Map unavailable: this listing does not have valid geometry coordinates.');
+            } else if (!window.maplibregl) {
+                console.warn('Map unavailable: MapLibre GL JS did not load.');
+            }
             mapElement.classList.add('map-unavailable');
         }
 
