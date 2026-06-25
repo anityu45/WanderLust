@@ -6,7 +6,7 @@ const { isLoggedIn, isOwner, validateListing } = require("../middleware.js");
 const ExpressError = require("../utils/ExpressError.js");
 const multer = require("multer");
 const { isCloudinaryConfigured, storage } = require("../cloudconfig.js");
-const { geocodeListing, isFallbackCoordinates } = require("../utils/geocode.js");
+const { geocodeListing, hasValidCoordinates, isFallbackCoordinates } = require("../utils/geocode.js");
 
 const allowedImageTypes = ["image/png", "image/jpeg", "image/webp"];
 const upload = multer({
@@ -36,6 +36,19 @@ const uploadListingImage = ({ required = false } = {}) => (req, res, next) => {
 
         next();
     });
+};
+
+const ensureListingGeometry = async (listing) => {
+    const coordinates = listing.geometry?.coordinates;
+    if (hasValidCoordinates(coordinates) && !isFallbackCoordinates(coordinates)) {
+        return;
+    }
+
+    const geometry = await geocodeListing(listing);
+    if (geometry) {
+        listing.geometry = geometry;
+        await listing.save();
+    }
 };
 
 // Index Route
@@ -95,6 +108,8 @@ router.get("/:id", wrapAsync(async (req, res) => {
         req.flash("error", "Listing you requested for does not exist!");
         return res.redirect("/listings");
     }
+
+    await ensureListingGeometry(listing);
     res.render("show.ejs", { listing });
 }));
 

@@ -9,19 +9,11 @@ const { geocodeListing, isFallbackCoordinates } = require("./utils/geocode.js");
 const MONGO_URL = "mongodb://127.0.0.1:27017/wander";
 const dbUrl = process.env.ATLASDB_URL || MONGO_URL;
 
-async function main() {
-    await mongoose.connect(dbUrl);
-}
-
-main()
-    .then(() => console.log("Connected to database for geo-migration."))
-    .catch((err) => {
-        console.error("Database connection error:", err);
-        process.exit(1);
-    });
-
 async function runMigration() {
     try {
+        await mongoose.connect(dbUrl, { serverSelectionTimeoutMS: 15000 });
+        console.log("Connected to database for geo-migration.");
+
         const listings = await Listing.find({
             $or: [
                 { geometry: { $exists: false } },
@@ -62,10 +54,13 @@ async function runMigration() {
 
         console.log("Migration routine completed successfully.");
     } catch (migrationError) {
-        console.error("Migration execution halted prematurely:", migrationError);
+        console.error("Migration execution halted prematurely:", migrationError.message);
+        process.exitCode = 1;
     } finally {
-        await mongoose.disconnect();
-        console.log("Database disconnected smoothly.");
+        if (mongoose.connection.readyState !== 0) {
+            await mongoose.disconnect();
+            console.log("Database disconnected smoothly.");
+        }
     }
 }
 

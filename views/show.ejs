@@ -180,8 +180,6 @@
         } else if (mapElement) {
             if (!maptilerApiKey) {
                 console.warn('Map unavailable: MAPTILER_API_KEY is not configured on the server.');
-            } else if (!hasValidCoordinates) {
-                console.warn('Map unavailable: this listing does not have valid geometry coordinates.');
             } else if (!window.maplibregl) {
                 console.warn('Map unavailable: MapLibre GL JS did not load.');
             }
