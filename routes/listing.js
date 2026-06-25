@@ -20,10 +20,14 @@ const upload = multer({
     },
 });
 
-const uploadListingImage = (req, res, next) => {
+const uploadListingImage = ({ required = false } = {}) => (req, res, next) => {
     upload.single("listing[image]")(req, res, (err) => {
         if (err) {
             return next(err);
+        }
+
+        if (required && !req.file) {
+            return next(new ExpressError("Please upload a listing image.", 400));
         }
 
         if (req.file && !isCloudinaryConfigured) {
@@ -54,7 +58,7 @@ router.get("/new", isLoggedIn, (req, res) => {
 // Create Route
 router.post("/", 
     isLoggedIn, 
-    uploadListingImage,
+    uploadListingImage({ required: true }),
     validateListing, 
     wrapAsync(async (req, res) => {
         const newListing = new Listing(req.body.listing);
@@ -78,7 +82,15 @@ router.post("/",
 // Show Route
 router.get("/:id", wrapAsync(async (req, res) => {
     const { id } = req.params;
-    const listing = await Listing.findById(id).populate("reviews").populate("owner");
+    const listing = await Listing.findById(id)
+        .populate({
+            path: "reviews",
+            populate: {
+                path: "author",
+                select: "username",
+            },
+        })
+        .populate("owner");
     if (!listing) {
         req.flash("error", "Listing you requested for does not exist!");
         return res.redirect("/listings");
@@ -98,7 +110,7 @@ router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(async (req, res) => {
 }));
 
 // Update Route
-router.put("/:id", isLoggedIn, isOwner, uploadListingImage, validateListing, wrapAsync(async (req, res) => {
+router.put("/:id", isLoggedIn, isOwner, uploadListingImage(), validateListing, wrapAsync(async (req, res) => {
     const { id } = req.params;
     const listingData = { ...req.body.listing };
     const existingListing = await Listing.findById(id);

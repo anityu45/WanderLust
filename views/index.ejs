@@ -9,7 +9,7 @@
     <% for (let listing of allListings) { %>
         <article class="listing-card">
             <a href="/listings/<%= listing._id %>" class="listing-card-link">
-                <img src="<%= listing.image || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb' %>" alt="<%= listing.title || 'Listing image' %>" class="listing-img">
+                <img src="<%= listing.imageUrl %>" alt="<%= listing.title || 'Listing image' %>" class="listing-img">
                 <div class="listing-info">
                     <h2><%= listing.title || 'Untitled listing' %></h2>
                     <p><%= listing.location || 'Location not added' %>, <%= listing.country || 'Country not added' %></p>

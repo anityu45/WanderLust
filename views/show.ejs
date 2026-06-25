@@ -12,7 +12,7 @@
 %>
 
 <section class="show-page">
-    <img src="<%= listing.image || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb' %>" alt="<%= listing.title || 'Listing image' %>" class="show-img">
+    <img src="<%= listing.imageUrl %>" alt="<%= listing.title || 'Listing image' %>" class="show-img">
 
     <div class="show-content">
         <p class="eyebrow"><%= listing.location || 'Location not added' %>, <%= listing.country || 'Country not added' %></p>
@@ -26,12 +26,14 @@
         </p>
         <p class="show-description"><%= listing.description || 'Description not added.' %></p>
 
-        <div class="actions">
-            <a class="btn secondary" href="/listings/<%= listing._id %>/edit">Edit Listing</a>
-            <form method="post" action="/listings/<%= listing._id %>?_method=DELETE">
-                <button class="btn danger">Delete</button>
-            </form>
-        </div>
+        <% if (currentUser && listing.owner && listing.owner.equals(currentUser._id)) { %>
+            <div class="actions">
+                <a class="btn secondary" href="/listings/<%= listing._id %>/edit">Edit Listing</a>
+                <form method="post" action="/listings/<%= listing._id %>?_method=DELETE">
+                    <button class="btn danger">Delete</button>
+                </form>
+            </div>
+        <% } %>
     </div>
 </section>
 
@@ -88,6 +90,9 @@
                         </span>
                         <% if (review.createdAt) { %>
                             <span><%= review.createdAt.toLocaleDateString("en-IN") %></span>
+                        <% } %>
+                        <% if (review.author && review.author.username) { %>
+                            <span>by <%= review.author.username %></span>
                         <% } %>
                     </div>
                     <p><%= review.comment %></p>

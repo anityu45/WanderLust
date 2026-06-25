@@ -27,7 +27,11 @@ const ExpressError = require("./utils/ExpressError.js");
 
 const app = express();
 const MONGO_URL = "mongodb://127.0.0.1:27017/wander";
-const dbUrl=process.env.ATLASDB_URL
+const dbUrl = process.env.ATLASDB_URL || MONGO_URL;
+const sessionSecret = process.env.SESSION_SECRET || "wanderlust-secret";
+const isProduction = process.env.NODE_ENV === "production";
+
+app.set("trust proxy", 1);
 
 async function main() {
     await mongoose.connect(dbUrl);
@@ -54,7 +58,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 const store=MongoStore.create({
    mongoUrl:dbUrl,
    crypto:{
-    secret:"wanderlust-secret",
+    secret: sessionSecret,
    },
    touchAfter:24*3600,
 });
@@ -65,11 +69,13 @@ store.on("error",(err)=>{
 
 const sessionOptions = {
     store,
-    secret: "wanderlust-secret",
+    secret: sessionSecret,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
         httpOnly: true,
+        sameSite: isProduction ? "none" : "lax",
+        secure: isProduction,
         expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
         maxAge: 7 * 24 * 60 * 60 * 1000,
     },
