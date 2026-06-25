@@ -7,12 +7,11 @@ const userSchema=new mongoose.Schema({
         required:true,
         unique:true
     },
-    username: { // Explicitly define username
+    username: {
         type: String
     }
 });
 
-// Use .default if the package is imported as an object in modern Node.js
 userSchema.plugin(passportLocalMongoose.default || passportLocalMongoose);
 const User=mongoose.model("User",userSchema);
 

@@ -101,37 +101,34 @@
 </section>
 
 <style>
-    /* Styling for the interactive rating input */
     .rating-input-container {
         margin-bottom: 1rem;
     }
 
     .rating-stars {
-        font-size: 1.5rem; /* Adjust size as needed */
+        font-size: 1.5rem;
         cursor: pointer;
         display: inline-block;
-        line-height: 1; /* Align stars properly */
+        line-height: 1;
     }
 
     .rating-stars .star {
-        color: #ccc; /* Default star color */
+        color: #ccc;
         transition: color 0.2s ease-in-out;
-        display: inline-block; /* Ensure stars are side-by-side */
+        display: inline-block;
     }
 
     .rating-stars .star.hovered,
     .rating-stars .star.selected {
-        color: gold; /* Highlighted/selected star color */
+        color: gold;
     }
 
-    /* Style for invalid rating input */
     .rating-stars.is-invalid-stars .star {
-        color: #dc3545; /* Bootstrap danger color */
+        color: #dc3545;
     }
 
-    /* Styling for displaying existing reviews */
     .review-card .stars {
-        font-size: 1.2rem; /* Adjust size for displayed stars */
+        font-size: 1.2rem;
         line-height: 1;
         display: inline-block;
         margin-right: 0.5rem;
@@ -186,14 +183,12 @@
             mapElement.classList.add('map-unavailable');
         }
 
-        // --- YOUR ORIGINAL STAR RATINGS SCRIPT ---
         const ratingStarsContainer = document.getElementById('rating-stars');
         const ratingInput = document.getElementById('rating');
         const stars = ratingStarsContainer ? ratingStarsContainer.querySelectorAll('.star') : [];
-        let currentRating = 0; // To store the selected rating
+        let currentRating = 0;
 
         if (ratingStarsContainer && ratingInput) {
-            // Function to update star display based on a given rating
             function updateStars(ratingToDisplay) {
                 stars.forEach(star => {
                     const starValue = parseInt(star.dataset.value);
@@ -207,34 +202,30 @@
 
             stars.forEach(star => {
                 star.addEventListener('mouseover', function() {
-                    updateStars(parseInt(this.dataset.value)); // Highlight up to hovered star
+                    updateStars(parseInt(this.dataset.value));
                 });
 
                 star.addEventListener('mouseout', function() {
-                    updateStars(currentRating); // Revert to selected rating or no selection
+                    updateStars(currentRating);
                 });
 
                 star.addEventListener('click', function() {
                     currentRating = parseInt(this.dataset.value);
                     ratingInput.value = currentRating;
-                    updateStars(currentRating); // Update visual state immediately
+                    updateStars(currentRating);
                 });
             });
 
-            // Initialize stars if there's a default value (e.g., from validation error)
             if (ratingInput.value) {
                 currentRating = parseInt(ratingInput.value);
                 updateStars(currentRating);
             }
 
-            // Add validation for the hidden input
             const reviewForm = document.querySelector('.review-form');
             if (reviewForm) {
                 reviewForm.addEventListener('submit', function(event) {
-                    // Custom validation for the rating input
                     if (!ratingInput.value) {
                         ratingInput.setCustomValidity('Please choose a rating.');
-                        // Add is-invalid to the visible rating container for feedback
                         ratingStarsContainer.classList.add('is-invalid-stars');
                         event.preventDefault();
                         event.stopPropagation();
@@ -243,7 +234,6 @@
                         ratingStarsContainer.classList.remove('is-invalid-stars');
                     }
 
-                    // Bootstrap's form validation
                     if (!reviewForm.checkValidity()) {
                         event.preventDefault();
                         event.stopPropagation();

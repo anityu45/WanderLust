@@ -51,24 +51,23 @@ const ensureListingGeometry = async (listing) => {
     }
 };
 
-// Index Route
+// Index
 router.get("/", wrapAsync(async (req, res) => {
     const allListings = await Listing.find({});
     res.render("index.ejs", { allListings });
 }));
 
-// Cookies Test Route (Can be removed later)
 router.get("/getcookies", (req, res) => {
     res.cookie("greet", "hello");
     res.send("sent u cookies");
 });
 
-// New Route
+// New
 router.get("/new", isLoggedIn, (req, res) => {
     res.render("new.ejs");
 });
 
-// Create Route
+// Create
 router.post("/", 
     isLoggedIn, 
     uploadListingImage({ required: true }),
@@ -92,7 +91,7 @@ router.post("/",
     })
 );
 
-// Show Route
+// Show
 router.get("/:id", wrapAsync(async (req, res) => {
     const { id } = req.params;
     const listing = await Listing.findById(id)
@@ -113,7 +112,7 @@ router.get("/:id", wrapAsync(async (req, res) => {
     res.render("show.ejs", { listing });
 }));
 
-// Edit Route
+// Edit
 router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(async (req, res) => {
     const { id } = req.params;
     const listing = await Listing.findById(id);
@@ -124,7 +123,7 @@ router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(async (req, res) => {
     res.render("edit.ejs", { listing });
 }));
 
-// Update Route
+// Update
 router.put("/:id", isLoggedIn, isOwner, uploadListingImage(), validateListing, wrapAsync(async (req, res) => {
     const { id } = req.params;
     const listingData = { ...req.body.listing };
@@ -175,7 +174,7 @@ router.put("/:id", isLoggedIn, isOwner, uploadListingImage(), validateListing, w
     res.redirect(`/listings/${id}`);
 }));
 
-// Delete Route
+// Delete
 router.delete("/:id", isLoggedIn, isOwner, wrapAsync(async (req, res) => {
     const { id } = req.params;
     await Listing.findByIdAndDelete(id);
