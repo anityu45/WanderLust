@@ -1,15 +1,6 @@
 <% layout("layouts/boilerplate") %>
 <% const currentUser = typeof currUser !== "undefined" ? currUser : null; %>
 <% const safeMaptilerApiKey = typeof maptilerApiKey !== "undefined" ? maptilerApiKey : ""; %>
-<%
-    const rawCoordinates = listing.geometry && Array.isArray(listing.geometry.coordinates)
-        ? listing.geometry.coordinates
-        : [];
-    const hasRealCoordinates = rawCoordinates.length === 2 &&
-        rawCoordinates.every((coordinate) => Number.isFinite(coordinate)) &&
-        !(rawCoordinates[0] === 77.2090 && rawCoordinates[1] === 28.6139);
-    const mapCoordinates = hasRealCoordinates ? rawCoordinates : null;
-%>
 
 <section class="show-page">
     <img src="<%= listing.imageUrl %>" alt="<%= listing.title || 'Listing image' %>" class="show-img">
@@ -159,7 +150,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         const mapElement = document.getElementById('map');
         const maptilerApiKey = <%- JSON.stringify(safeMaptilerApiKey) %>;
-        const coordinates = <%- JSON.stringify(mapCoordinates) %>;
+        const coordinates = <%- JSON.stringify(listing.geometry && listing.geometry.coordinates ? listing.geometry.coordinates : null) %>;
         const hasValidCoordinates = coordinates &&
             Array.isArray(coordinates) &&
             coordinates.length === 2 &&
